@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBMS - Smart Bell Management</title>
+    <!-- Use Google Fonts for typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ionicons for lightweight SVG icons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Modals -->
+    <!-- Emergency Full Screen Overlay -->
+    <div id="emergency-overlay" class="emergency-overlay hidden">
+        <div class="emergency-content">
+            <ion-icon name="alert-circle-outline" class="pulse-icon"></ion-icon>
+            <h1>EMERGENCY BELL ACTIVE</h1>
+            <p>The emergency continuous bell is currently ringing.</p>
+            <button id="cancel-emergency-btn" class="btn btn-danger">DEACTIVATE EMERGENCY</button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Bell Modal -->
+    <div id="bell-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New Bell</h3>
+                <button class="close-modal" id="close-bell-modal"><ion-icon name="close-outline"></ion-icon></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="bell-id">
+                <div class="form-group">
+                    <label for="bell-hour">Hour (24h)</label>
+                    <select id="bell-hour" class="form-control">
+                        <!-- Options generated in JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bell-minute">Minute</label>
+                    <select id="bell-minute" class="form-control">
+                        <!-- Options generated in JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bell-duration">Duration (Seconds)</label>
+                    <input type="number" id="bell-duration" class="form-control" min="1" max="30" value="5">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-bell-btn">Cancel</button>
+                <button class="btn btn-primary" id="save-bell-btn">Save Bell</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Action</h3>
+                <button class="close-modal" id="close-confirm-modal"><ion-icon name="close-outline"></ion-icon></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-confirm-btn">Cancel</button>
+                <button class="btn btn-danger" id="execute-confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         AUTHENTICATION VIEW
+         ============================================== -->
+    <main id="view-login" class="view active">
+        <div class="login-wrapper">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="logo-icon">SBMS</div>
+                    <h2>Admin Login</h2>
+                    <p>Smart Bell Management System</p>
+                </div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-with-icon">
+                            <ion-icon name="mail-outline"></ion-icon>
+                            <input type="email" id="email" class="form-control" placeholder="Enter email" required
+                                autocomplete="email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-with-icon">
+                            <ion-icon name="lock-closed-outline"></ion-icon>
+                            <input type="password" id="password" class="form-control" placeholder="Enter password"
+                                required autocomplete="current-password">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">
+                        Login <ion-icon name="arrow-forward-outline"></ion-icon>
+                    </button>
+                </form>
+                <div class="login-footer">
+                    <p>Demo: admin@sbms.com / admin123<br>staff@sbms.com / staff123</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==============================================
+         MAIN APPLICATION VIEW
+         ============================================== -->
+    <div id="view-app" class="view">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">SBMS</div>
+                <span class="brand-text">Admin Panel</span>
+                <button class="sidebar-toggle-mobile" id="mobile-sidebar-close">
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" data-target="dashboard">
+                            <ion-icon name="grid-outline"></ion-icon>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-target="schedule">
+                            <ion-icon name="calendar-outline"></ion-icon>
+                            <span>Schedule Management</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-target="logs">
+                            <ion-icon name="reader-outline"></ion-icon>
+                            <span>System Logs</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-target="settings">
+                            <ion-icon name="settings-outline"></ion-icon>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="nav-link logout-link" id="logout-btn">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Layout -->
+        <div class="main-layout">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menu-toggle">
+                        <ion-icon name="menu-outline"></ion-icon>
+                    </button>
+                    <div class="header-title">
+                        <h1>SBMS - Smart Bell Management System</h1>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-danger btn-pulse" id="btn-emergency-top">
+                        <ion-icon name="warning-outline"></ion-icon> <span class="hide-mobile">Activate Emergency
+                            Bell</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area (Holds different pages) -->
+            <main class="content-area">
+
+                <!-- PAGE: Dashboard -->
+                <section id="page-dashboard" class="page active">
+                    <div class="page-header">
+                        <h2>Dashboard</h2>
+                        <p class="subtitle">Overview and quick controls</p>
+                    </div>
+
+                    <!-- Clock Widget -->
+                    <div class="clock-widget">
+                        <div class="clock-display" id="live-time">00:00:00</div>
+                        <div class="date-display" id="live-date">Loading...</div>
+                    </div>
+
+                    <!-- Status Cards -->
+                    <div class="grid-cards">
+                        <div class="status-card">
+                            <div class="card-icon blue-bg">
+                                <ion-icon name="wifi-outline"></ion-icon>
+                            </div>
+                            <div class="card-info">
+                                <h3>WiFi Status</h3>
+                                <p class="status-value success" id="wifi-status">Connected</p>
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="card-icon indigo-bg">
+                                <ion-icon name="time-outline"></ion-icon>
+                            </div>
+                            <div class="card-info">
+                                <h3>Time Sync</h3>
+                                <p class="status-value success" id="ntp-status">Synced via NTP</p>
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="card-icon cyan-bg">
+                                <ion-icon name="notifications-outline"></ion-icon>
+                            </div>
+                            <div class="card-info">
+                                <h3>Scheduled Today</h3>
+                                <p class="status-value highlight" id="today-bells-count">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="section-container">
+                        <h3 class="section-title">Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-xl" id="btn-ring-now">
+                                <ion-icon name="notifications-outline"></ion-icon>
+                                <span>Ring Bell Now<br><small>(Manual Override)</small></span>
+                            </button>
+                            <button class="btn btn-danger btn-xl" id="btn-emergency-main">
+                                <ion-icon name="warning-outline"></ion-icon>
+                                <span>Emergency Mode<br><small>(Continuous Alarm)</small></span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: Schedule Management -->
+                <section id="page-schedule" class="page">
+                    <div class="page-header flex-between">
+                        <div>
+                            <h2>Bell Schedule Management</h2>
+                            <p class="subtitle">Configure automatic bell timings</p>
+                        </div>
+                        <button class="btn btn-primary" id="btn-add-bell">
+                            <ion-icon name="add-outline"></ion-icon> Add New Bell
+                        </button>
+                    </div>
+
+                    <div class="table-container shadow-card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Time</th>
+                                    <th>Duration</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedule-tbody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="schedule-empty" class="empty-state hidden">
+                            <ion-icon name="calendar-clear-outline"></ion-icon>
+                            <p>No bells scheduled yet.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: System Logs -->
+                <section id="page-logs" class="page">
+                    <div class="page-header flex-between">
+                        <div>
+                            <h2>System Logs</h2>
+                            <p class="subtitle">Recent bell triggers and events</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="btn-export-logs">
+                                <ion-icon name="download-outline"></ion-icon> Export CSV
+                            </button>
+                            <button class="btn btn-danger-outline" id="btn-clear-logs">
+                                <ion-icon name="trash-outline"></ion-icon> Clear Logs
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container shadow-card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-tbody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="logs-empty" class="empty-state hidden">
+                            <ion-icon name="document-text-outline"></ion-icon>
+                            <p>No logs available.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: Settings -->
+                <section id="page-settings" class="page">
+                    <div class="page-header">
+                        <h2>System Settings</h2>
+                        <p class="subtitle">Configure device preferences</p>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="settings-card shadow-card">
+                            <h3>Timing Configuration</h3>
+                            <div class="form-group mt-2">
+                                <label for="default-duration">Default Ringtone Duration (sec)</label>
+                                <input type="number" id="default-duration" class="form-control" value="5" min="1"
+                                    max="30">
+                            </div>
+                            <div class="form-group">
+                                <label for="timezone-select">System Timezone</label>
+                                <select id="timezone-select" class="form-control">
+                                    <option value="+00:00">UTC +00:00</option>
+                                    <option value="+05:30" selected>IST (UTC +05:30)</option>
+                                    <option value="-05:00">EST (UTC -05:00)</option>
+                                    <!-- Simplified list for demo -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-card shadow-card">
+                            <h3>Hardware Controls</h3>
+                            <div class="settings-row">
+                                <div class="settings-label">
+                                    <strong>Enable Internal Buzzer</strong>
+                                    <p>Sound the small buzzer on the ESP32 board</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-buzzer" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <hr class="divider">
+
+                            <div class="settings-row">
+                                <div class="settings-label">
+                                    <strong>Enable External Relay</strong>
+                                    <p>Trigger the main school bell connected to relay</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-relay" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-actions mt-3">
+                        <button class="btn btn-primary btn-lg" id="btn-save-settings">Save Settings</button>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Footer -->
+            <footer class="main-footer">
+                <p>&copy; <span id="current-year"></span> Smart Campus Solutions Pvt Ltd. All rights reserved.</p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
